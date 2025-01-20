@@ -6,7 +6,7 @@ import nacl from "tweetnacl";
 
 function SolanaWallet({ mnemonic }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [publicKeys, setPublicKeys] = useState([]);
+  const [wallets, setWallets] = useState([]);
 
   return (
     <div className="h-screen w-screen bg-gray-900 text-white flex flex-col items-center">
@@ -20,30 +20,41 @@ function SolanaWallet({ mnemonic }) {
             const derivedSeed = derivePath(path, seed.toString("hex")).key;
             const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
             const keypair = Keypair.fromSecretKey(secret);
+
             setCurrentIndex(currentIndex + 1);
-            setPublicKeys([...publicKeys, keypair.publicKey]);
+            setWallets([
+              ...wallets,
+              {
+                publicKey: keypair.publicKey.toBase58(),
+                privateKey: secret.toString("hex"),
+              },
+            ]);
           }}
           className="px-6 py-3 bg-blue-500 rounded-lg text-lg font-semibold hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400"
         >
-          Add Solana wallet
+          Add Solana Wallet
         </button>
-        {/* {publicKeys.map(p => <div>
-            {p.toBase58()}
-        </div>)} */}
+
         <div className="mt-6 w-full max-w-2xl">
-          {publicKeys.length > 0 && (
+          {wallets.length > 0 && (
             <h2 className="text-xl font-semibold mb-4">Generated Wallets:</h2>
           )}
           <ul className="space-y-3">
-            {publicKeys.map((address, index) => (
+            {wallets.map((wallet, index) => (
               <li
                 key={index}
                 className="p-4 bg-gray-800 rounded-md shadow-md border border-gray-700"
               >
-                <span className="font-medium text-blue-400">
-                  SOL Wallet {index + 1}:
-                </span>{" "}
-                <span className="break-words">{address.toBase58()}</span>
+                <div>
+                  <span className="font-medium text-blue-400">
+                    SOL Wallet {index + 1} (Public Key):
+                  </span>{" "}
+                  <span className="break-words">{wallet.publicKey}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-red-400">Private Key:</span>{" "}
+                  <span className="break-words">{wallet.privateKey}</span>
+                </div>
               </li>
             ))}
           </ul>
